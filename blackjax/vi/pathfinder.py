@@ -68,6 +68,7 @@ class PathFinderAlgorithm(NamedTuple):
     sample: Callable
 
 
+# MARK: approximate
 def approximate(
     rng_key: PRNGKey,
     logdensity_fn: Callable,
@@ -202,6 +203,7 @@ def approximate(
     )
 
 
+# MARK: sample
 def sample(
     rng_key: PRNGKey,
     state: PathfinderState,

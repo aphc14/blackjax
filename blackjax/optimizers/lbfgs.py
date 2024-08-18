@@ -62,6 +62,7 @@ class LBFGSHistory(NamedTuple):
     update_mask: Array
 
 
+# Q: what is this used for and how does it differ to _minimize_lbfgs? function is only used in test_opt
 def minimize_lbfgs(
     fun: Callable,
     x0: ArrayLikeTree,
