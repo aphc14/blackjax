@@ -1,4 +1,4 @@
-from . import (
+from blackjax.mcmc import (
     barker,
     elliptical_slice,
     ghmc,

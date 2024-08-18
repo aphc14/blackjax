@@ -1,5 +1,5 @@
-from . import adaptive_tempered, inner_kernel_tuning, tempered
-from .base import extend_params
+from blackjax.smc import adaptive_tempered, inner_kernel_tuning, tempered
+from blackjax.smc.base import extend_params
 
 __all__ = [
     "adaptive_tempered",
