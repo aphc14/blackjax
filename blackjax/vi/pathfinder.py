@@ -167,7 +167,9 @@ def approximate(
             beta=beta,
             gamma=gamma,
         )
-        logp = -jax.vmap(objective_fn)(phi)
+
+        # UPDATE: removed negative sign
+        logp = jax.vmap(objective_fn)(phi)
         elbo = (logp - logq).mean()  # Algorithm 7 of the paper
         return elbo, beta, gamma
 
