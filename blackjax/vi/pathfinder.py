@@ -82,6 +82,8 @@ def approximate(
     ftol=1e-05,
     **lbfgs_kwargs,
 ) -> tuple[PathfinderState, PathfinderInfo]:
+    # Q: do we record how many failed attempts were there?
+
     """Pathfinder variational inference algorithm.
 
     Pathfinder locates normal approximations to the target density along a
@@ -106,9 +108,8 @@ def approximate(
     maxcor
         Maximum number of metric corrections of the LGBFS algorithm ("history
         size")
-    ftol
-        The LGBFS algorithm terminates the minimization when `(f_k - f_{k+1}) <
-        ftol`
+    ftol # Q: isn't this relative tolerance? it looks like _minimize_lbfgs treats ftol like relative tolerance
+        The LGBFS algorithm terminates the minimization when `(f_k - f_{k+1}) < ftol`
     gtol
         The LGBFS algorithm terminates the minimization when `|g_k|_norm < gtol`
     maxls
