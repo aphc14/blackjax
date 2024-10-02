@@ -223,7 +223,7 @@ def _minimize_lbfgs(
         x=x0,
         f=value0,
         g=grad0,
-        alpha=jnp.ones_like(x0),
+        alpha=jnp.ones_like(x0),  # line 2 of Algorithm 3
         update_mask=jnp.zeros_like(x0, dtype=bool),
     )
 
@@ -276,6 +276,7 @@ def lbfgs_recover_alpha(alpha_lm1, s_l, z_l, epsilon=1e-12):
         )
         return 1.0 / inv_alpha_l
 
+    # Q: shouldn't it be "<" ???
     pred = s_l.T @ z_l > (epsilon * jnp.linalg.norm(z_l, 2))
     alpha_l = lax.cond(
         pred, compute_next_alpha, lambda *_: alpha_lm1, s_l, z_l, alpha_lm1
@@ -296,20 +297,40 @@ def lbfgs_inverse_hessian_factors(S, Z, alpha):
     Pathfinder: Parallel quasi-newton variational inference, Lu Zhang et al., arXiv:2108.03782
 
     """
+
     param_dims = S.shape[-1]
     StZ = S.T @ Z
-    R = jnp.triu(StZ) + jnp.eye(param_dims) * jnp.finfo(S.dtype).eps
+    # StZ = jnp.einsum("...lj,...lj->", S, Z)
+    E = jnp.triu(StZ) + jnp.eye(param_dims) * jnp.finfo(S.dtype).eps
 
+    # dim(eta) = (L^max, N) the diagonal elements
+    # dim(diag(eta)) = (L^max, N, N)
     eta = jnp.diag(StZ)
 
     beta = jnp.hstack([jnp.diag(alpha) @ Z, S])
 
-    minvR = -jnp.linalg.inv(R)
-    alphaZ = jnp.diag(jnp.sqrt(alpha)) @ Z
-    block_dd = minvR.T @ (alphaZ.T @ alphaZ + jnp.diag(eta)) @ minvR
+    # invE = jnp.linalg.inv(E)
+    invE = jnp.linalg.solve(E, jnp.eye(param_dims))
+    block_dd = invE.T @ (jnp.diag(eta) + Z.T @ jnp.diag(alpha) @ Z) @ invE
     gamma = jnp.block(
-        [[jnp.zeros((param_dims, param_dims)), minvR], [minvR.T, block_dd]]
+        [[jnp.zeros((param_dims, param_dims)), -invE], [-invE.T, block_dd]]
     )
+
+    # param_dims = S.shape[-1]
+    # StZ = S.T @ Z
+    # R = jnp.triu(StZ) + jnp.eye(param_dims) * jnp.finfo(S.dtype).eps
+
+    # eta = jnp.diag(StZ)
+
+    # beta = jnp.hstack([jnp.diag(alpha) @ Z, S])
+
+    # minvR = -jnp.linalg.inv(R)
+    # alphaZ = jnp.diag(jnp.sqrt(alpha)) @ Z
+    # block_dd = minvR.T @ (alphaZ.T @ alphaZ + jnp.diag(eta)) @ minvR
+    # gamma = jnp.block(
+    #     [[jnp.zeros((param_dims, param_dims)), minvR], [minvR.T, block_dd]]
+    # )
+
     return beta, gamma
 
 
