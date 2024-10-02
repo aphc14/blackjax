@@ -96,16 +96,16 @@ def approximate(
     ----------
     rng_key
         PRPNG key
-    logdensity_fn
+    logdensity_fn # @log p
         (un-normalized) log densify function of target distribution to take
         approximate samples from
-    initial_position
+    initial_position # @theta^(0) ~ pi_0
         starting point of the L-BFGS optimization routine
-    num_samples
+    num_samples # @K
         number of samples to draw to estimate ELBO
-    maxiter
+    maxiter # @L
         Maximum number of iterations of the LGBFS algorithm.
-    maxcor
+    maxcor # @J
         Maximum number of metric corrections of the LGBFS algorithm ("history
         size")
     ftol # Q: isn't this relative tolerance? it looks like _minimize_lbfgs treats ftol like relative tolerance
@@ -113,8 +113,7 @@ def approximate(
     gtol
         The LGBFS algorithm terminates the minimization when `|g_k|_norm < gtol`
     maxls
-        The maximum number of line search steps (per iteration) for the LGBFS
-        algorithm
+        The maximum number of line search steps (per iteration) for the LGBFS algorithm
     **lbfgs_kwargs
         other keyword arguments passed to `jaxopt.LBFGS`.
 
@@ -141,6 +140,9 @@ def approximate(
     )
 
     # Get postions and gradients of the optimization path (including the starting point).
+
+    # NTS: status.iter_num.item() returns the idx it LBFGS converged
+
     position = history.x
     grad_position = history.g
     alpha = history.alpha
@@ -169,6 +171,8 @@ def approximate(
         )
         logp = -jax.vmap(objective_fn)(phi)
         elbo = (logp - logq).mean()  # Algorithm 7 of the paper
+        # Q: gamma has a very large negative number in one of the indices! -4e+15
+
         return elbo, beta, gamma
 
     # Index and reshape S and Z to be sliding window view shape=(maxiter,
@@ -179,9 +183,23 @@ def approximate(
     s_j = s_padded[index.reshape(path_size, maxcor)].reshape(path_size, maxcor, -1)
     z_j = z_padded[index.reshape(path_size, maxcor)].reshape(path_size, maxcor, -1)
     rng_keys = jax.random.split(rng_key, path_size)
+
+    # Q: batch_size = (maxiter + 1,) but the s_j, z_j, alpha, position, grad_position can be clipped up till convergence to reduce compute time.
+    # Q: L <= L^max, therefore, find L and do not use L^max
+
+    """
+    try this:
+    clip_from = jnp.argmin(
+        (jnp.arange(path_size) < (status.iter_num)) & jnp.isfinite(elbo)
+        )
+    and return clipped s_j, z_j, alpha, position, grad_position
+    """
+
     elbo, beta, gamma = jax.vmap(path_finder_body_fn)(
         rng_keys, s_j, z_j, alpha, position, grad_position
     )
+
+    # TODO: remove -jnp.inf. let's keep all the elbo up till convergence
     elbo = jnp.where(
         (jnp.arange(path_size) < (status.iter_num)) & jnp.isfinite(elbo),
         elbo,
