@@ -103,7 +103,7 @@ def approximate(
         starting point of the L-BFGS optimization routine
     num_samples # @K
         number of samples to draw to estimate ELBO
-    maxiter # @L
+    maxiter # @L^max
         Maximum number of iterations of the LGBFS algorithm.
     maxcor # @J
         Maximum number of metric corrections of the LGBFS algorithm ("history
@@ -125,9 +125,12 @@ def approximate(
     contains all the states traversed.
 
     """
+    # Q: is ravel_pytree needed since the inputs are flatten in the join_nonshared_inputs?
     initial_position_flatten, unravel_fn = ravel_pytree(initial_position)
     objective_fn = lambda x: -logdensity_fn(unravel_fn(x))
 
+    # NTS: L-BFGS (line 3 of Algorithm 1)
+    # TODO: pytensor wrapper around jaxopt.LBFGS and convert _minimize_lbfgs to pytensor function
     (_, status), history = _minimize_lbfgs(
         objective_fn,
         initial_position_flatten,
@@ -157,7 +160,10 @@ def approximate(
     s_padded = jnp.pad(s_masked, ((maxcor, 0), (0, 0)), mode="constant")
     z_padded = jnp.pad(z_masked, ((maxcor, 0), (0, 0)), mode="constant")
 
-    def path_finder_body_fn(rng_key, S, Z, alpha_l, theta, theta_grad):
+    # TODO: convert `path_finder_body_fn` to pytensor.function
+    def path_finder_body_fn(
+        rng_key, S, Z, alpha_l, theta, theta_grad
+    ):  # -> tuple[Any, Array, Array]:
         """The for loop body in Algorithm 1 of the Pathfinder paper."""
         beta, gamma = lbfgs_inverse_hessian_factors(S.T, Z.T, alpha_l)
         phi, logq = bfgs_sample(
@@ -236,7 +242,7 @@ def sample(
         PRNG key
     state
         PathfinderState containing information for sampling
-    num_samples
+    num_samples # @M
         Number of samples to draw
 
     Returns
@@ -247,6 +253,7 @@ def sample(
     position_flatten, unravel_fn = ravel_pytree(state.position)
     grad_position_flatten, _ = ravel_pytree(state.grad_position)
 
+    # TODO: convert `bfgs_sample` to pytensor.function
     phi, logq = bfgs_sample(
         rng_key,
         num_samples,
