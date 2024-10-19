@@ -14,7 +14,7 @@ from typing import Callable, NamedTuple, Optional
 
 from typing_extensions import Protocol
 
-from .types import ArrayLikeTree, PRNGKey
+from blackjax.types import ArrayLikeTree, PRNGKey
 
 Position = ArrayLikeTree
 State = NamedTuple

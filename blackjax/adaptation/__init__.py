@@ -1,4 +1,4 @@
-from . import (
+from blackjax.adaptation import (
     chees_adaptation,
     mclmc_adaptation,
     meads_adaptation,

@@ -2,46 +2,46 @@ import dataclasses
 from typing import Callable
 
 from blackjax._version import __version__
-
-from .adaptation.chees_adaptation import chees_adaptation
-from .adaptation.mclmc_adaptation import mclmc_find_L_and_step_size
-from .adaptation.meads_adaptation import meads_adaptation
-from .adaptation.pathfinder_adaptation import pathfinder_adaptation
-from .adaptation.window_adaptation import window_adaptation
-from .base import SamplingAlgorithm, VIAlgorithm
-from .diagnostics import effective_sample_size as ess
-from .diagnostics import potential_scale_reduction as rhat
-from .mcmc import barker
-from .mcmc import dynamic_hmc as _dynamic_hmc
-from .mcmc import elliptical_slice as _elliptical_slice
-from .mcmc import ghmc as _ghmc
-from .mcmc import hmc as _hmc
-from .mcmc import mala as _mala
-from .mcmc import marginal_latent_gaussian
-from .mcmc import mclmc as _mclmc
-from .mcmc import nuts as _nuts
-from .mcmc import periodic_orbital, random_walk
-from .mcmc import rmhmc as _rmhmc
-from .mcmc.random_walk import additive_step_random_walk as _additive_step_random_walk
-from .mcmc.random_walk import (
+from blackjax.adaptation.chees_adaptation import chees_adaptation
+from blackjax.adaptation.mclmc_adaptation import mclmc_find_L_and_step_size
+from blackjax.adaptation.meads_adaptation import meads_adaptation
+from blackjax.adaptation.pathfinder_adaptation import pathfinder_adaptation
+from blackjax.adaptation.window_adaptation import window_adaptation
+from blackjax.base import SamplingAlgorithm, VIAlgorithm
+from blackjax.diagnostics import effective_sample_size as ess
+from blackjax.diagnostics import potential_scale_reduction as rhat
+from blackjax.mcmc import barker
+from blackjax.mcmc import dynamic_hmc as _dynamic_hmc
+from blackjax.mcmc import elliptical_slice as _elliptical_slice
+from blackjax.mcmc import ghmc as _ghmc
+from blackjax.mcmc import hmc as _hmc
+from blackjax.mcmc import mala as _mala
+from blackjax.mcmc import marginal_latent_gaussian
+from blackjax.mcmc import mclmc as _mclmc
+from blackjax.mcmc import nuts as _nuts
+from blackjax.mcmc import periodic_orbital, random_walk
+from blackjax.mcmc import rmhmc as _rmhmc
+from blackjax.mcmc.random_walk import (
+    additive_step_random_walk as _additive_step_random_walk,
+)
+from blackjax.mcmc.random_walk import (
     irmh_as_top_level_api,
     normal_random_walk,
     rmh_as_top_level_api,
 )
-from .optimizers import dual_averaging, lbfgs
-from .sgmcmc import csgld as _csgld
-from .sgmcmc import sghmc as _sghmc
-from .sgmcmc import sgld as _sgld
-from .sgmcmc import sgnht as _sgnht
-from .smc import adaptive_tempered
-from .smc import inner_kernel_tuning as _inner_kernel_tuning
-from .smc import partial_posteriors_path as _partial_posteriors_smc
-from .smc import tempered
-from .vi import meanfield_vi as _meanfield_vi
-from .vi import pathfinder as _pathfinder
-from .vi import schrodinger_follmer as _schrodinger_follmer
-from .vi import svgd as _svgd
-from .vi.pathfinder import PathFinderAlgorithm
+from blackjax.optimizers import dual_averaging, lbfgs
+from blackjax.sgmcmc import csgld as _csgld
+from blackjax.sgmcmc import sghmc as _sghmc
+from blackjax.sgmcmc import sgld as _sgld
+from blackjax.sgmcmc import sgnht as _sgnht
+from blackjax.smc import adaptive_tempered
+from blackjax.smc import inner_kernel_tuning as _inner_kernel_tuning
+from blackjax.smc import tempered
+from blackjax.vi import meanfield_vi as _meanfield_vi
+from blackjax.vi import pathfinder as _pathfinder
+from blackjax.vi import schrodinger_follmer as _schrodinger_follmer
+from blackjax.vi import svgd as _svgd
+from blackjax.vi.pathfinder import PathFinderAlgorithm
 
 """
 The above three classes exist as a backwards compatible way of exposing both the high level, differentiable
