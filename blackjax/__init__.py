@@ -36,6 +36,7 @@ from blackjax.sgmcmc import sgld as _sgld
 from blackjax.sgmcmc import sgnht as _sgnht
 from blackjax.smc import adaptive_tempered
 from blackjax.smc import inner_kernel_tuning as _inner_kernel_tuning
+from blackjax.smc import partial_posteriors_path as _partial_posteriors_smc
 from blackjax.smc import tempered
 from blackjax.vi import meanfield_vi as _meanfield_vi
 from blackjax.vi import pathfinder as _pathfinder
