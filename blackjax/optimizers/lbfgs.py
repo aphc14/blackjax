@@ -217,6 +217,7 @@ def _minimize_lbfgs(
 
     value0, grad0 = jax.value_and_grad(fun)(x0)
     # LBFGS update overwrite value internally, here is to set the value for checking condition
+    # NTS: state is an LbfgsState container with the fields: ('iter_num', 'value', 'grad', 'stepsize', 'error', 's_history', 'y_history', 'rho_history', 'gamma', 'aux', 'failed_linesearch', 'num_fun_eval', 'num_grad_eval', 'num_linesearch_iter')
     state = state._replace(value=value0)
     init_step = OptStep(params=x0, state=state)
     initial_history = LBFGSHistory(
@@ -239,7 +240,12 @@ def _minimize_lbfgs(
     return last_step, history
 
 
-def lbfgs_recover_alpha(alpha_lm1, s_l, z_l, epsilon=1e-12):
+def lbfgs_recover_alpha(
+    alpha_lm1,
+    s_l,
+    z_l,
+    epsilon=1e-12,  # NTS: paper uses 1e-11, prob won't make a difference
+):
     """
     Compute diagonal elements of the inverse Hessian approximation from optimation path.
     It implements the inner loop body of Algorithm 3 in :cite:p:`zhang2022pathfinder`.
@@ -273,7 +279,7 @@ def lbfgs_recover_alpha(alpha_lm1, s_l, z_l, epsilon=1e-12):
             a / (b * alpha_lm1)
             + z_l**2 / b
             - (a * s_l**2) / (b * c * alpha_lm1**2)
-        )
+        )  # fmt: off
         return 1.0 / inv_alpha_l
 
     # Q: shouldn't it be "<" ???
@@ -281,6 +287,7 @@ def lbfgs_recover_alpha(alpha_lm1, s_l, z_l, epsilon=1e-12):
     alpha_l = lax.cond(
         pred, compute_next_alpha, lambda *_: alpha_lm1, s_l, z_l, alpha_lm1
     )
+    # NTS: the mask here is an integer for each l in the paper, and not a vector
     mask_l = jnp.where(
         pred,
         jnp.ones_like(alpha_lm1, dtype=bool),
@@ -371,7 +378,7 @@ def bfgs_sample(rng_key, num_samples, position, grad_position, alpha, beta, gamm
     """
     if not isinstance(num_samples, tuple):
         num_samples = (num_samples,)
-
+    # TODO: replace with `pytensor.tensor.nlinalg.qr`
     Q, R = jnp.linalg.qr(jnp.diag(jnp.sqrt(1 / alpha)) @ beta)
     param_dims = beta.shape[0]
     Id = jnp.identity(R.shape[0])
